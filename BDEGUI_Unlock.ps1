@@ -1,3 +1,13 @@
+using namespace System.Collections.Generic
+
+foreach ($clsFile in Get-ChildItem -Path "$PSScriptRoot\classes" -Filter "*.ps1") {
+    . "$($clsFile.FullName)"
+}
+
+foreach ($utilFile in Get-ChildItem -Path "$PSScriptRoot\utilities" -Filter "*.ps1") {
+    . "$($utilFile.FullName)"
+}
+
 $RPS8_TextChanged = {
     $OK_Button.Enabled = $RPS1.Text -ne "" -and $RPS2.Text -ne "" -and $RPS3.Text -ne "" -and $RPS4.Text -ne "" -and $RPS5.Text -ne "" -and $RPS6.Text -ne "" -and $RPS7.Text -ne "" -and $RPS8.Text -ne ""
 }
@@ -50,6 +60,53 @@ $RPS1_TextChanged = {
 		$RPS2.Focus()
 	}
 }
+
+$global:encryptableVolumes = [List[EncryptableVolume]]::new()
+
+$BDEGUIUnlockForm_Load = {
+	# get and display encryptable volumes
+	$global:encryptableVolumes = Get-EncryptedVolumes
+	
+	$VolumesComboBox.Items.AddRange(($global:encryptableVolumes | Select-Object -ExpandProperty DriveLetter))
+}
+
+$OK_Button_Click = {
+	# Build up the numerical password.
+	$BDEGUIUnlockForm.Cursor = 'WaitCursor'
+	$numericalPassword = "$($RPS1.Text)-$($RPS2.Text)-$($RPS3.Text)-$($RPS4.Text)-$($RPS5.Text)-$($RPS6.Text)-$($RPS7.Text)-$($RPS8.Text)"
+	$unlockResult = Unlock-EncryptedVolumeWithNumericalPassword -PersistentVolumeID "$($global:encryptableVolumes[$VolumesComboBox.SelectedIndex].PersistentVolumeID)" -NumericalPassword "$numericalPassword"
+	$BDEGUIUnlockForm.Cursor = 'Arrow'
+	
+	switch ($unlockResult) {
+		$S_OK {
+			[System.Windows.Forms.MessageBox]::Show("The selected volume has been successfully unlocked.", $BDEGUIUnlockForm.Text, "OK", "Info")
+			$BDEGUIUnlockForm.DialogResult = 'OK'
+			$BDEGUIUnlockForm.Close()
+		}
+		$FVE_E_NOT_ACTIVATED {
+			[System.Windows.Forms.MessageBox]::Show("The selected volume does not have BitLocker turned on.", $BDEGUIUnlockForm.Text, "OK", "Error")
+			return
+		}
+		$FVE_E_PROTECTOR_NOT_FOUND {
+			[System.Windows.Forms.MessageBox]::Show("The selected volume does not use this method for recovery.", $BDEGUIUnlockForm.Text, "OK", "Error")
+			return
+		}
+		$FVE_E_FAILED_AUTHENTICATION {
+			[System.Windows.Forms.MessageBox]::Show("The selected volume cannot be unlocked with the provided password.", $BDEGUIUnlockForm.Text, "OK", "Error")
+			return
+		}
+		$FVE_E_INVALID_PASSWORD_FORMAT {
+			[System.Windows.Forms.MessageBox]::Show("The provided recovery password has not been typed correctly.", $BDEGUIUnlockForm.Text, "OK", "Error")
+			return
+		}
+		default {
+			[System.Windows.Forms.MessageBox]::Show("The volume could not be unlocked. Error code: $unlockResult", $BDEGUIUnlockForm.Text, "OK", "Error")
+			return
+		}
+	}
+}
+
+
 Add-Type -AssemblyName System.Windows.Forms
 . (Join-Path $PSScriptRoot 'bdegui_unlock.designer.ps1')
-$BDEGUIUnlockForm.ShowDialog()
+$BDEGUIUnlockForm.ShowDialog() | Out-Null

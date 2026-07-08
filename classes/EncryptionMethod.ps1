@@ -1,4 +1,4 @@
-enum EncryptionMethod : int {
+enum EncryptionMethod {
     None = 0
     Aes128Diffuser = 1
     Aes256Diffuser = 2

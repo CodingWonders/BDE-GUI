@@ -1,7 +1,7 @@
 $BDEGUIUnlockForm = New-Object -TypeName System.Windows.Forms.Form
 [System.Windows.Forms.Label]$Label1 = $null
 [System.Windows.Forms.Label]$Label2 = $null
-[System.Windows.Forms.ComboBox]$ComboBox1 = $null
+[System.Windows.Forms.ComboBox]$VolumesComboBox = $null
 [System.Windows.Forms.Label]$Label3 = $null
 [System.Windows.Forms.TextBox]$RPS1 = $null
 [System.Windows.Forms.Label]$Label4 = $null
@@ -24,7 +24,7 @@ function InitializeComponent
 {
 $Label1 = (New-Object -TypeName System.Windows.Forms.Label)
 $Label2 = (New-Object -TypeName System.Windows.Forms.Label)
-$ComboBox1 = (New-Object -TypeName System.Windows.Forms.ComboBox)
+$VolumesComboBox = (New-Object -TypeName System.Windows.Forms.ComboBox)
 $Label3 = (New-Object -TypeName System.Windows.Forms.Label)
 $RPS1 = (New-Object -TypeName System.Windows.Forms.TextBox)
 $Label4 = (New-Object -TypeName System.Windows.Forms.Label)
@@ -64,13 +64,13 @@ $Label2.Size = (New-Object -TypeName System.Drawing.Size -ArgumentList @([System
 $Label2.TabIndex = [System.Int32]1
 $Label2.Text = [System.String]'Volume to unlock:'
 #
-#ComboBox1
+#VolumesComboBox
 #
-$ComboBox1.FormattingEnabled = $true
-$ComboBox1.Location = (New-Object -TypeName System.Drawing.Point -ArgumentList @([System.Int32]251,[System.Int32]36))
-$ComboBox1.Name = [System.String]'ComboBox1'
-$ComboBox1.Size = (New-Object -TypeName System.Drawing.Size -ArgumentList @([System.Int32]383,[System.Int32]28))
-$ComboBox1.TabIndex = [System.Int32]2
+$VolumesComboBox.FormattingEnabled = $true
+$VolumesComboBox.Location = (New-Object -TypeName System.Drawing.Point -ArgumentList @([System.Int32]251,[System.Int32]36))
+$VolumesComboBox.Name = [System.String]'VolumesComboBox'
+$VolumesComboBox.Size = (New-Object -TypeName System.Drawing.Size -ArgumentList @([System.Int32]383,[System.Int32]28))
+$VolumesComboBox.TabIndex = [System.Int32]2
 #
 #Label3
 #
@@ -294,6 +294,7 @@ $OK_Button.Size = (New-Object -TypeName System.Drawing.Size -ArgumentList @([Sys
 $OK_Button.TabIndex = [System.Int32]4
 $OK_Button.Text = [System.String]'OK'
 $OK_Button.UseVisualStyleBackColor = $true
+$OK_Button.add_Click($OK_Button_Click)
 #
 #Cancel_Button
 #
@@ -315,7 +316,7 @@ $BDEGUIUnlockForm.ClientSize = (New-Object -TypeName System.Drawing.Size -Argume
 $BDEGUIUnlockForm.Controls.Add($Cancel_Button)
 $BDEGUIUnlockForm.Controls.Add($OK_Button)
 $BDEGUIUnlockForm.Controls.Add($RPS1)
-$BDEGUIUnlockForm.Controls.Add($ComboBox1)
+$BDEGUIUnlockForm.Controls.Add($VolumesComboBox)
 $BDEGUIUnlockForm.Controls.Add($Label2)
 $BDEGUIUnlockForm.Controls.Add($Label1)
 $BDEGUIUnlockForm.Controls.Add($Label3)
@@ -342,11 +343,12 @@ $BDEGUIUnlockForm.ShowIcon = $false
 $BDEGUIUnlockForm.SizeGripStyle = [System.Windows.Forms.SizeGripStyle]::Hide
 $BDEGUIUnlockForm.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
 $BDEGUIUnlockForm.Text = [System.String]'Unlock Encrypted Drive'
+$BDEGUIUnlockForm.add_Load($BDEGUIUnlockForm_Load)
 $BDEGUIUnlockForm.ResumeLayout($false)
 $BDEGUIUnlockForm.PerformLayout()
 Add-Member -InputObject $BDEGUIUnlockForm -Name Label1 -Value $Label1 -MemberType NoteProperty
 Add-Member -InputObject $BDEGUIUnlockForm -Name Label2 -Value $Label2 -MemberType NoteProperty
-Add-Member -InputObject $BDEGUIUnlockForm -Name ComboBox1 -Value $ComboBox1 -MemberType NoteProperty
+Add-Member -InputObject $BDEGUIUnlockForm -Name VolumesComboBox -Value $VolumesComboBox -MemberType NoteProperty
 Add-Member -InputObject $BDEGUIUnlockForm -Name Label3 -Value $Label3 -MemberType NoteProperty
 Add-Member -InputObject $BDEGUIUnlockForm -Name RPS1 -Value $RPS1 -MemberType NoteProperty
 Add-Member -InputObject $BDEGUIUnlockForm -Name Label4 -Value $Label4 -MemberType NoteProperty
