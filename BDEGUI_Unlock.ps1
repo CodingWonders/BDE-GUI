@@ -67,13 +67,35 @@ $BDEGUIUnlockForm_Load = {
 	# get and display encryptable volumes
 	$global:encryptableVolumes = Get-EncryptedVolumes
 	
-	$VolumesComboBox.Items.AddRange(($global:encryptableVolumes | Select-Object -ExpandProperty DriveLetter))
+	if ($global:encryptableVolumes.Count -lt 1) {
+		[System.Windows.Forms.MessageBox]::Show("No encryptable volumes have been detected. Connect an encryptable volume and click Refresh.", $BDEGUIUnlockForm.Text, "OK", "Info")
+	} else {
+		$VolumesComboBox.Items.AddRange(($global:encryptableVolumes | Select-Object -ExpandProperty DriveLetter))
+		$VolumesComboBox.SelectedIndex = 0
+	}
+}
+
+$Refresh_Button_Click = {
+	# get and display encryptable volumes
+	$global:encryptableVolumes = Get-EncryptedVolumes
+	
+	$VolumesComboBox.Items.Clear()
+	
+	if ($global:encryptableVolumes.Count -lt 1) {
+		[System.Windows.Forms.MessageBox]::Show("No encryptable volumes have been detected. Connect an encryptable volume and click Refresh.", $BDEGUIUnlockForm.Text, "OK", "Info")
+	} else {
+		$VolumesComboBox.Items.AddRange(($global:encryptableVolumes | Select-Object -ExpandProperty DriveLetter))
+		$VolumesComboBox.SelectedIndex = 0
+	}
+	
+	$BDEGUIUnlockForm.DialogResult = 'None'
 }
 
 $VolumesComboBox_SelectedIndexChanged = {
 	$volumeProtectors = Get-VolumeKeyProtectors -PersistentVolumeID "$($global:encryptableVolumes[$VolumesComboBox.SelectedIndex].PersistentVolumeID)"
 	$passwordProtectors = $volumeProtectors | Where-Object { $_.ProtectorType -eq [KeyProtectorType]::NumericalPassword }
 	if ($passwordProtectors -eq $null) {
+		[System.Windows.Forms.MessageBox]::Show("This volume does not appear to use a numerical password as a key protector.", $BDEGUIUnlockForm.Text, "OK", "Info")
 		$KPIDLabel.Text = ""
 	} else {
 		$KPIDLabel.Text = "$($passwordProtectors.ProtectorId.Replace('{', '').Replace('}', ''))"

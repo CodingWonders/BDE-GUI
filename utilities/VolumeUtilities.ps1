@@ -63,6 +63,30 @@ function Get-VolumeKeyProtectors {
     return $keyProtectors
 }
 
+function Get-VolumeLockStatus {
+    param (
+        [Parameter(Mandatory, Position = 0)] [string] $PersistentVolumeID
+    )
+    
+    $lockStatus = -1
+    
+    try {
+        $encVolumeInstance = Get-EncryptedVolumeInstance -PersistentVolumeID "$PersistentVolumeID"
+        if ($null -eq $encVolumeInstance) {
+            return $lockStatus
+        }
+        $lockStatusResults = $encVolumeInstance | Invoke-CimMethod -MethodName "GetLockStatus" -ErrorAction Stop
+        if (($null -eq $lockStatusResults) -or ($lockStatusResults.ReturnValue -ne 0)) {
+            throw
+        }
+        $lockStatus = $lockStatusResults.LockStatus
+        
+        return $lockStatus
+    } catch {
+        return $lockStatus
+    }
+}
+
 function Test-NumericalPasswordFormat {
     param (
         [Parameter(Mandatory, Position = 0)] [string] $NumericalPassword
@@ -95,6 +119,26 @@ function Test-NumericalPasswordFormat {
     }
     
     return $true
+}
+
+function Lock-Volume {
+    param (
+        [Parameter(Mandatory, Position = 0)] [string] $PersistentVolumeID
+    )
+    
+    try {
+        $encVolumeInstance = Get-EncryptedVolumeInstance -PersistentVolumeID "$PersistentVolumeID"
+        if ($null -eq $encVolumeInstance) {
+            throw
+        }
+        $result = $encVolumeInstance | Invoke-CimMethod -MethodName "Lock" -ErrorAction Stop
+        if ($null -eq $result) {
+            throw
+        }
+        return $result.ReturnValue
+    } catch {
+        return $E_FAIL
+    }
 }
 
 function Unlock-EncryptedVolumeWithNumericalPassword {

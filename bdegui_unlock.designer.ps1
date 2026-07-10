@@ -22,6 +22,7 @@ $BDEGUIUnlockForm = New-Object -TypeName System.Windows.Forms.Form
 [System.Windows.Forms.Button]$Cancel_Button = $null
 [System.Windows.Forms.Label]$Label11 = $null
 [System.Windows.Forms.Label]$KPIDLabel = $null
+[System.Windows.Forms.Button]$Refresh_Button = $null
 function InitializeComponent
 {
 $Label1 = (New-Object -TypeName System.Windows.Forms.Label)
@@ -47,6 +48,7 @@ $OK_Button = (New-Object -TypeName System.Windows.Forms.Button)
 $Cancel_Button = (New-Object -TypeName System.Windows.Forms.Button)
 $Label11 = (New-Object -TypeName System.Windows.Forms.Label)
 $KPIDLabel = (New-Object -TypeName System.Windows.Forms.Label)
+$Refresh_Button = (New-Object -TypeName System.Windows.Forms.Button)
 $BDEGUIUnlockForm.SuspendLayout()
 #
 #Label1
@@ -355,6 +357,22 @@ $KPIDLabel.Size = (New-Object -TypeName System.Drawing.Size -ArgumentList @([Sys
 $KPIDLabel.TabIndex = [System.Int32]1
 $KPIDLabel.Text = [System.String]'    '
 #
+#Refresh_Button
+#
+$Refresh_Button.BackColor = [System.Drawing.SystemColors]::Control
+$Refresh_Button.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
+$Refresh_Button.FlatStyle = [System.Windows.Forms.FlatStyle]::System
+$Refresh_Button.Font = (New-Object -TypeName System.Drawing.Font -ArgumentList @([System.String]'Segoe UI',[System.Single]11.25))
+$Refresh_Button.ForeColor = [System.Drawing.Color]::Black
+$Refresh_Button.Location = (New-Object -TypeName System.Drawing.Point -ArgumentList @([System.Int32]640,[System.Int32]35))
+$Refresh_Button.Name = [System.String]'Refresh_Button'
+$Refresh_Button.RightToLeft = [System.Windows.Forms.RightToLeft]::No
+$Refresh_Button.Size = (New-Object -TypeName System.Drawing.Size -ArgumentList @([System.Int32]75,[System.Int32]29))
+$Refresh_Button.TabIndex = [System.Int32]5
+$Refresh_Button.Text = [System.String]'Refresh'
+$Refresh_Button.UseVisualStyleBackColor = $true
+$Refresh_Button.add_Click($Refresh_Button_Click)
+#
 #BDEGUIUnlockForm
 #
 $BDEGUIUnlockForm.AcceptButton = $OK_Button
@@ -383,6 +401,7 @@ $BDEGUIUnlockForm.Controls.Add($Label9)
 $BDEGUIUnlockForm.Controls.Add($Label10)
 $BDEGUIUnlockForm.Controls.Add($Label11)
 $BDEGUIUnlockForm.Controls.Add($KPIDLabel)
+$BDEGUIUnlockForm.Controls.Add($Refresh_Button)
 $BDEGUIUnlockForm.Font = (New-Object -TypeName System.Drawing.Font -ArgumentList @([System.String]'Segoe UI',[System.Single]11.25,[System.Drawing.FontStyle]::Regular,[System.Drawing.GraphicsUnit]::Point,([System.Byte][System.Byte]0)))
 $BDEGUIUnlockForm.ForeColor = [System.Drawing.Color]::Black
 $BDEGUIUnlockForm.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedSingle
@@ -418,5 +437,6 @@ Add-Member -InputObject $BDEGUIUnlockForm -Name OK_Button -Value $OK_Button -Mem
 Add-Member -InputObject $BDEGUIUnlockForm -Name Cancel_Button -Value $Cancel_Button -MemberType NoteProperty
 Add-Member -InputObject $BDEGUIUnlockForm -Name Label11 -Value $Label11 -MemberType NoteProperty
 Add-Member -InputObject $BDEGUIUnlockForm -Name KPIDLabel -Value $KPIDLabel -MemberType NoteProperty
+Add-Member -InputObject $BDEGUIUnlockForm -Name Refresh_Button -Value $Refresh_Button -MemberType NoteProperty
 }
 . InitializeComponent
