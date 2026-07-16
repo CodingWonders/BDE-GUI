@@ -39,7 +39,13 @@ $Refresh_Button_Click = {
 $VolumesComboBox_SelectedIndexChanged = {
 	# display information about the selected volume
 	try {
+		$selectedEncryptableVolume = $global:encryptableVolumes[$VolumesComboBox.SelectedIndex]
+		if ($null -eq $selectedEncryptableVolume) {
+			return
+		}
 		
+		$lblDeviceID.Text = $selectedEncryptableVolume.DeviceID
+		$lblPersistentVolumeID.Text = $selectedEncryptableVolume.PersistentVolumeID
 	} catch {
 		# don't do anything
 	}

@@ -234,6 +234,7 @@ $Panel1.Controls.Add($lblPercentEncrypted)
 $Panel1.Controls.Add($Label6)
 $Panel1.Controls.Add($lblConversionStatus)
 $Panel1.Controls.Add($Label5)
+$Panel1.Enabled = $false
 $Panel1.Location = (New-Object -TypeName System.Drawing.Point -ArgumentList @([System.Int32]63,[System.Int32]122))
 $Panel1.Name = [System.String]'Panel1'
 $Panel1.Size = (New-Object -TypeName System.Drawing.Size -ArgumentList @([System.Int32]617,[System.Int32]130))
