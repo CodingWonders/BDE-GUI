@@ -46,6 +46,31 @@ $VolumesComboBox_SelectedIndexChanged = {
 		
 		$lblDeviceID.Text = $selectedEncryptableVolume.DeviceID
 		$lblPersistentVolumeID.Text = $selectedEncryptableVolume.PersistentVolumeID
+		
+		$lockStatus = Get-VolumeLockStatus -PersistentVolumeID $selectedEncryptableVolume.PersistentVolumeID
+
+		$Panel1.enabled = $lockStatus -eq [LockStatus]::Unlocked
+
+		switch ($lockStatus) {
+			0 {
+				$lblVolumeLockStatus.text = "Unlocked"
+			}
+			1 {
+				$lblVolumeLockStatus.text = "Locked"
+			}
+			-1 {
+				$lblVolumeLockStatus.text = "Unknown"
+			}
+		}
+
+		if ($lockStatus -eq [LockStatus]::Unlocked) {
+			$encryptionPercentage = (Get-VolumeEncryptionPercentage -PersistentVolumeID $selectedEncryptableVolume.PersistentVolumeID) / 10000
+
+			$lblPercentEncrypted.Text = "$encryptionPercentage %"
+			$pbPercentEncrypted.Value = $encryptionPercentage
+		}
+
+		
 	} catch {
 		# don't do anything
 	}

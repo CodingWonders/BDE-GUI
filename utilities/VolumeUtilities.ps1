@@ -165,3 +165,30 @@ function Unlock-EncryptedVolumeWithNumericalPassword {
         return $E_FAIL
     }
 }
+
+function Get-VolumeEncryptionPercentage {
+    param (
+        [Parameter(Mandatory, Position = 0)] [string] $PersistentVolumeID
+    )
+
+    $Percentage = 0
+
+    try {
+        $encVolumeInstance = Get-EncryptedVolumeInstance -PersistentVolumeID "$PersistentVolumeID"
+
+        if ($null -eq $encVolumeInstance) {
+            throw
+        }
+        $result = $encVolumeInstance | Invoke-CimMethod -MethodName "GetConversionStatus" -Arguments @{PrecisionFactor = 4}
+        if ($null -eq $result) {
+            throw
+        }
+
+        $Percentage = $result.EncryptionPercentage
+        return $Percentage
+
+    } catch {
+        return $Percentage
+    }
+
+}
