@@ -24,6 +24,8 @@ $Refresh_Button_Click = {
 	# get and display encryptable volumes
 	$global:encryptableVolumes = Get-EncryptedVolumes
 	
+	$VolumesComboBox.Items.Clear()
+	
 	if ($global:encryptableVolumes.Count -lt 1) {
 		[System.Windows.Forms.MessageBox]::Show("No encryptable volumes have been detected. Connect an encryptable volume and click Refresh.", $BDEGUILockForm.Text, "OK", "Info")
 	} else {
