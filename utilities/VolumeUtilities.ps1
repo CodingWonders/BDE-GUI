@@ -141,6 +141,45 @@ function Lock-Volume {
     }
 }
 
+function Get-VolumeConversionStatus {
+    param (
+        [Parameter(Mandatory, Position = 0)] [string] $PersistentVolumeID,
+        [Parameter(Position = 1)] [int] $PrecisionFactor = 4
+    )
+    
+    if ($PrecisionFactor -lt 1) {
+        $PrecisionFactor = 1
+    } elseif ($PrecisionFactor -gt 4) {
+        $PrecisionFactor = 4
+    }
+    
+    $conversionStatus = $null
+    
+    try {
+        $encVolumeInstance = Get-EncryptedVolumeInstance -PersistentVolumeID "$PersistentVolumeID"
+        if ($null -eq $encVolumeInstance) {
+            throw
+        }
+        $result = $encVolumeInstance | Invoke-CimMethod -MethodName "GetConversionStatus" -Arguments @{PrecisionFactor = $PrecisionFactor}
+        if ($null -eq $result) {
+            throw
+        }
+        
+        # Pass on the results
+        $volumeConversionStatus = $result.ConversionStatus
+        $volumeEncryptionPercentage = $result.EncryptionPercentage
+        $volumeEncryptionFlags = $result.EncryptionFlags
+        $volumeWipingPercentage = $result.WipingPercentage
+        $volumeWipingStatus = $result.WipingStatus
+        
+        $conversionStatus = [ConversionStatus]::new($volumeConversionStatus, $volumeEncryptionPercentage, $volumeEncryptionFlags, $volumeWipingStatus, $volumeWipingPercentage)
+    } catch {
+        return $conversionStatus
+    }
+    
+    return $conversionStatus
+}
+
 function Unlock-EncryptedVolumeWithNumericalPassword {
     param (
         [Parameter(Mandatory, Position = 0)] [string] $PersistentVolumeID,
@@ -164,4 +203,18 @@ function Unlock-EncryptedVolumeWithNumericalPassword {
     } catch {
         return $E_FAIL
     }
+}
+
+function Get-VolumeEncryptionPercentage {
+    param (
+        [Parameter(Mandatory, Position = 0)] [string] $PersistentVolumeID
+    )
+
+    try {
+        $conversionStatus = Get-VolumeConversionStatus -PersistentVolumeID $PersistentVolumeID        
+        return $conversionStatus.EncryptionPercentage
+    } catch {
+        return 0
+    }
+
 }
