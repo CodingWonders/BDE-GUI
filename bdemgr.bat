@@ -24,7 +24,8 @@ echo     Available commands:
 echo     - unlock -- unlocks an encrypted volume
 echo     - lock -- locks a decrypted volume
 echo     - info -- queries information about an encryptable volume
-echo     - encrypt -- encrypts a volume (turns on BitLocker for the volume)
+echo     - encrypt -- encrypts a volume (turns on BitLocker for the volume) and
+echo                  creates a numerical recovery password
 echo     - decrypt -- decrypts a volume (turns off BitLocker for the volume)
 echo.
 

@@ -6,20 +6,36 @@ class ConversionStatus {
 	[UInt32] $WipingPercentage
 	
 	ConversionStatus() {
-		$this.ConversionStatus = [VolumeConversionStatus]::Unknown
-		$this.EncryptionPercentage = 0
-		$this.EncryptionFlags = 0
-		$this.WipingStatus = [VolumeWipingStatus]::Unknown
-		$this.WipingPercentage = 0
+		$this.Init()
+	}
+	
+	ConversionStatus($conversionStatus) {
+		$this.Init($conversionStatus)
 	}
 	
 	ConversionStatus($conversionStatus, $encryptionPercentage, $encryptionFlags) {
-		$this.ConversionStatus = $conversionStatus
-		$this.EncryptionPercentage = $encryptionPercentage
-		$this.EncryptionFlags = $encryptionFlags
+		$this.Init($conversionStatus, $encryptionPercentage, $encryptionFlags)
 	}
 	
 	ConversionStatus($conversionStatus, $encryptionPercentage, $encryptionFlags, $wipingStatus, $wipingPercentage) {
+		$this.Init($conversionStatus, $encryptionPercentage, $encryptionFlags, $wipingStatus, $wipingPercentage)
+	}
+	
+	# Allow for constructor chaining as pwsh doesn't support it by default and I don't want to repeat
+	# myself. https://stackoverflow.com/questions/44413206/constructor-chaining-in-powershell-call-other-constructors-in-the-same-class/44414513#44414513
+	hidden Init() {
+		$this.Init([VolumeConversionStatus]::Unknown, 0, 0, [VolumeWipingStatus]::Unknown, 0)
+	}
+	
+	hidden Init($conversionStatus) {
+		$this.Init($conversionStatus, 0, 0, [VolumeWipingStatus]::Unknown, 0)
+	}
+	
+	hidden Init($conversionStatus, $encryptionPercentage, $encryptionFlags) {
+		$this.Init($conversionStatus, $encryptionPercentage, $encryptionFlags, [VolumeWipingStatus]::Unknown, 0)
+	}
+	
+	hidden Init($conversionStatus, $encryptionPercentage, $encryptionFlags, $wipingStatus, $wipingPercentage) {
 		$this.ConversionStatus = $conversionStatus
 		$this.EncryptionPercentage = $encryptionPercentage
 		$this.EncryptionFlags = $encryptionFlags
