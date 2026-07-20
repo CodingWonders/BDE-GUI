@@ -393,3 +393,26 @@ function Resume-VolumeEncryptionOrDecryption {
         return $E_FAIL
     }
 }
+
+function Get-VolumeVersion {
+    param (
+        [Parameter(Mandatory, Position = 0)] [string] $PersistentVolumeID
+    )
+
+    try {
+        $encVolumeInstance = Get-EncryptedVolumeInstance -PersistentVolumeID $PersistentVolumeID
+        if ($null -eq $encVolumeInstance) {
+            throw
+        }
+
+        $VersionResult = $encVolumeInstance | Invoke-CimMethod -MethodName "GetVersion"
+        if ($null -eq $VersionResult) {
+            throw
+        }
+
+        return $VersionResult.Version         
+    } catch {
+        return $E_FAIL
+    }
+    
+}

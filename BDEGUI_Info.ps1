@@ -46,7 +46,9 @@ $VolumesComboBox_SelectedIndexChanged = {
 		
 		$lblDeviceID.Text = $selectedEncryptableVolume.DeviceID
 		$lblPersistentVolumeID.Text = $selectedEncryptableVolume.PersistentVolumeID
-		
+		$conversionStatus = Get-VolumeConversionStatus -PersistentVolumeID $selectedEncryptableVolume.PersistentVolumeID
+		$protectionStatus = Get-VolumeProtectionStatus -PersistentVolumeID $selectedEncryptableVolume.PersistentVolumeID
+		$VersionStatus = Get-VolumeVersion -PersistentVolumeID $selectedEncryptableVolume.PersistentVolumeID
 		$lockStatus = Get-VolumeLockStatus -PersistentVolumeID $selectedEncryptableVolume.PersistentVolumeID
 
 		$Panel1.enabled = $lockStatus -eq [LockStatus]::Unlocked
@@ -64,11 +66,49 @@ $VolumesComboBox_SelectedIndexChanged = {
 		}
 
 		if ($lockStatus -eq [LockStatus]::Unlocked) {
-			$encryptionPercentage = (Get-VolumeEncryptionPercentage -PersistentVolumeID $selectedEncryptableVolume.PersistentVolumeID) / 10000
+			$convStatusStr = ""
+			switch ($conversionStatus.ConversionStatus) {
+				"Unknown" { $convStatusStr = "Unknown" }
+				"FullyDecrypted" { $convStatusStr = "Fully Decrypted" }
+				"FullyEncrypted" { $convStatusStr = "Fully Encrypted" }
+				"EncryptionInProgress" { $convStatusStr = "Encryption in progress..." }
+				"DecryptionInProgress" { $convStatusStr = "Decryption in progress..." }
+				"EncryptionPaused" { $convStatusStr = "Encryption Paused" }
+				"DecryptionPaused" { $convStatusStr = "Decryption Paused" }
+			}
+			$lblConversionStatus.text = $convStatusStr
+
+			$encryptionPercentage = $conversionStatus.EncryptionPercentage / 10000
 
 			$lblPercentEncrypted.Text = "$encryptionPercentage %"
 			$pbPercentEncrypted.Value = $encryptionPercentage
+
+			$protectStatusStr = ""
+			switch ($protectionStatus) {
+				0 {
+					if ($selectedEncryptableVolume.PersistentVolumeID -ne "") {
+						$protectStatusStr = "Unprotected. Recovery keys in the clear"
+					} else {
+						$protectStatusStr = "Unprotected"
+					}
+				}
+				1 { $protectStatusStr = "Protected" }
+				2 { $protectStatusStr = "Unknown" }
+			}
+			$lblProtectionStatus.Text = $protectStatusStr
+
+			$VersionStr = ""
+			switch ($VersionStatus) {
+				0 { $VersionStr = "Unknown" }
+				1 { $VersionStr = "Windows Vista" }
+				2 { $VersionStr = "Windows 7/8/10/11" }
+			}
+
+			$lblVersion.Text = "$VersionStatus ($VersionStr)"
+
+	
 		}
+		
 
 		
 	} catch {
