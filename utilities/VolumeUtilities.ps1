@@ -328,7 +328,29 @@ function Start-VolumeEncryption {
     }
 }
 
-function Pause-VolumeEncryption {
+function Start-VolumeDecryption {
+    param (
+        [Parameter(Mandatory, Position = 0)] [string] $PersistentVolumeID
+    )
+    
+    try {
+        $encVolumeInstance = Get-EncryptedVolumeInstance -PersistentVolumeID "$PersistentVolumeID"
+        if ($null -eq $encVolumeInstance) {
+            throw
+        }
+        
+        $decryptionResults = $encVolumeInstance | Invoke-CimMethod -MethodName "Decrypt"
+        if ($null -eq $decryptionResults) {
+            throw
+        }
+        
+        return $decryptionResults.ReturnValue
+    } catch {
+        return $E_FAIL
+    }
+}
+
+function Pause-VolumeEncryptionOrDecryption {
     param (
         [Parameter(Mandatory, Position = 0)] [string] $DeviceID
     )
@@ -350,7 +372,7 @@ function Pause-VolumeEncryption {
     }
 }
 
-function Resume-VolumeEncryption {
+function Resume-VolumeEncryptionOrDecryption {
     param (
         [Parameter(Mandatory, Position = 0)] [string] $DeviceID
     )

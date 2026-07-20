@@ -11,7 +11,7 @@ foreach ($utilFile in Get-ChildItem -Path "$PSScriptRoot\utilities" -Filter "*.p
 $BDEGUIUnlockForm_Load = {
 	# get and display encryptable volumes
 	$EncryptionControlsTLP.Enabled = $false
-	$global:volumes = Get-EncryptableVolumes
+	$global:volumes = Get-EncryptedVolumes
 	
 	if ($global:volumes.Count -lt 1) {
 		[System.Windows.Forms.MessageBox]::Show("No encryptable volumes have been detected. Connect an encryptable volume and click Refresh.", $BDEGUIEncryptForm.Text, "OK", "Info")
@@ -63,7 +63,7 @@ $VolumesComboBox_SelectedIndexChanged = {
 				$pbPercentEncrypted.Value = 100
 				$lblProtectionStatus.Text = "Locked"
 				
-				$Encrypt_Button.Enabled = $false
+				$Decrypt_Button.Enabled = $false
 				
 				return
 			}
@@ -107,43 +107,39 @@ $VolumesComboBox_SelectedIndexChanged = {
 		$pbPercentEncrypted.Value = $encPercent
 		$lblProtectionStatus.Text = $protectStatusStr
 		
-		$Encrypt_Button.Enabled = $volumeConversionStatus.ConversionStatus -ne [VolumeConversionStatus]::FullyEncrypted
+		$Decrypt_Button.Enabled = $volumeConversionStatus.ConversionStatus -ne [VolumeConversionStatus]::FullyDecrypted
 	} catch {
 		# don't do anything
 		Write-Host $_
 	}
 }
 
-$Encrypt_Button_Click = {
-	$encryptionResult = Start-VolumeEncryption -DeviceID "$($global:volumes[$VolumesComboBox.SelectedIndex].DeviceID)"
-	if (($null -eq $encryptionResult) -or ($encryptionResult["StatusCode"] -ne 0)) {
-		[System.Windows.Forms.MessageBox]::Show("The selected volume could not be encrypted.", $BDEGUIEncryptForm.Text, "OK", "Error")
+$Decrypt_Button_Click = {
+	if ((Start-VolumeDecryption -PersistentVolumeID "$($global:volumes[$VolumesComboBox.SelectedIndex].PersistentVolumeID)") -ne $S_OK) {
+		[System.Windows.Forms.MessageBox]::Show("The selected volume could not be decrypted.", $BDEGUIEncryptForm.Text, "OK", "Error")
 		return
 	}
 	
 	$EncryptionControlsTLP.Enabled = $true
 	$tmrEncryptionProgress.Enabled = $true
-	$Panel2.Visible = $true
-	$lblNewProtectorId.Text = $encryptionResult["KeyProtectorId"]
-	$lblNewPassword.Text = $encryptionResult["NumericalPassword"]
-	$Encrypt_Button.Enabled = $false
+	$Decrypt_Button.Enabled = $false
 	$VolumesComboBox.Enabled = $false
 	$Refresh_Button.Enabled = $false
 }
 
-$ResumeEncryption_Button_Click = {
+$ResumeDecryption_Button_Click = {
 	if ((Resume-VolumeEncryptionOrDecryption -DeviceID "$($global:volumes[$VolumesComboBox.SelectedIndex].DeviceID)") -eq $S_OK) {
-		$PauseEncryption_Button.Enabled = $true
-		$ResumeEncryption_Button.Enabled = $false
+		$PauseDecryption_Button.Enabled = $true
+		$ResumeDecryption_Button.Enabled = $false
 	} else {
 		[System.Windows.Forms.MessageBox]::Show("Encryption could not be resumed.", $BDEGUIEncryptForm.Text, "OK", "Error")
 	}	
 }
 
-$PauseEncryption_Button_Click = {
+$PauseDecryption_Button_Click = {
 	if ((Pause-VolumeEncryptionOrDecryption -DeviceID "$($global:volumes[$VolumesComboBox.SelectedIndex].DeviceID)") -eq $S_OK) {
-		$PauseEncryption_Button.Enabled = $false
-		$ResumeEncryption_Button.Enabled = $true
+		$PauseDecryption_Button.Enabled = $false
+		$ResumeDecryption_Button.Enabled = $true
 	} else {
 		[System.Windows.Forms.MessageBox]::Show("Encryption could not be paused.", $BDEGUIEncryptForm.Text, "OK", "Error")
 	}
@@ -154,8 +150,15 @@ $tmrEncryptionProgress_Tick = {
 	$newPersistentVolumeId = Get-PersistentVolumeIDFromDeviceId -DeviceID "$($global:volumes[$VolumesComboBox.SelectedIndex].DeviceID)"
 	$lblPersistentVolumeID.Text = $newPersistentVolumeId
 	
-	$volumeConversionStatus = Get-VolumeConversionStatus -PersistentVolumeID $newPersistentVolumeId
-	$volumeProtectionStatus = Get-VolumeProtectionStatus -PersistentVolumeID $newPersistentVolumeId
+	# If the volume lost its persistent ID, then it is fully decrypted and we should stop. Mark conversion status
+	# as fully decrypted.
+	if ($newPersistentVolumeId -eq "") {
+		$volumeConversionStatus = [ConversionStatus]::new([VolumeConversionStatus]::FullyDecrypted)
+		$volumeProtectionStatus = 0
+	} else {
+		$volumeConversionStatus = Get-VolumeConversionStatus -PersistentVolumeID $newPersistentVolumeId
+		$volumeProtectionStatus = Get-VolumeProtectionStatus -PersistentVolumeID $newPersistentVolumeId
+	}
 	
 	# this has to do with the precision factor for the conversion status: the more precise it is, the more
 	# zeros we have to add here.
@@ -177,7 +180,7 @@ $tmrEncryptionProgress_Tick = {
 	$protectStatusStr = ""
 	switch ($volumeProtectionStatus) {
 		0 {
-			if ($selectedEncryptableVolume.PersistentVolumeID -ne "") {
+			if ($newPersistentVolumeId -ne "") {
 				$protectStatusStr = "Unprotected. Recovery keys in the clear"
 			} else {
 				$protectStatusStr = "Unprotected"
@@ -193,7 +196,7 @@ $tmrEncryptionProgress_Tick = {
 	$lblProtectionStatus.Text = $protectStatusStr
 	
 	# handle timer-specific stuff
-	if ($volumeConversionStatus.ConversionStatus -eq [volumeConversionStatus]::FullyEncrypted) {
+	if ($volumeConversionStatus.ConversionStatus -eq [volumeConversionStatus]::FullyDecrypted) {
 		$tmrEncryptionProgress.Enabled = $false
 		$EncryptionControlsTLP.Enabled = $false
 		$VolumesComboBox.Enabled = $true
@@ -202,5 +205,5 @@ $tmrEncryptionProgress_Tick = {
 }
 
 Add-Type -AssemblyName System.Windows.Forms
-. (Join-Path $PSScriptRoot 'bdegui_encrypt.designer.ps1') | Out-Null
+. (Join-Path $PSScriptRoot 'bdegui_decrypt.designer.ps1') | Out-Null
 $BDEGUIEncryptForm.ShowDialog() | Out-Null
