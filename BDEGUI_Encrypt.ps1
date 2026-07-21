@@ -117,7 +117,21 @@ $VolumesComboBox_SelectedIndexChanged = {
 $Encrypt_Button_Click = {
 	$encryptionResult = Start-VolumeEncryption -DeviceID "$($global:volumes[$VolumesComboBox.SelectedIndex].DeviceID)"
 	if (($null -eq $encryptionResult) -or ($encryptionResult["StatusCode"] -ne 0)) {
-		[System.Windows.Forms.MessageBox]::Show("The selected volume could not be encrypted.", $BDEGUIEncryptForm.Text, "OK", "Error")
+		if ($null -ne $encryptionResult) {
+			$msg = ""
+			switch ($encryptionResult["StatusCode"]) {
+				$E_INVALIDARG { $msg = "The selected encryption method is not supported on this environment." }
+				$FVE_E_CANNOT_ENCRYPT_NO_KEY { $msg = "No encryption key exists for the selected volume." }
+				$ERROR_INVALID_OPERATION { $msg = "No encryption key exists for the selected volume." }
+				$FVE_E_CANNOT_SET_FVEK_ENCRYPTED { $msg = "The provided encryption method does not match that of the partially or fully encrypted volume." }
+				$FVE_E_CLUSTERING_NOT_SUPPORTED { $msg = "The current environment is configured to be part of a server cluster. This is not supported." }
+				$FVE_E_LOCKED_VOLUME { $msg = "Currently, this volume is locked." }
+				$FVE_E_POLICY_PASSWORD_REQUIRED { $msg = "No supported key protectors of numerical password type are specified." }
+			}
+			[System.Windows.Forms.MessageBox]::Show("$msg", $BDEGUIEncryptForm.Text, "OK", "Error")
+		} else {
+			[System.Windows.Forms.MessageBox]::Show("The selected volume could not be encrypted.", $BDEGUIEncryptForm.Text, "OK", "Error")
+		}
 		return
 	}
 	

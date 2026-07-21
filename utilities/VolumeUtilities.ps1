@@ -316,7 +316,7 @@ function Start-VolumeEncryption {
         $encryptionResult["NumericalPassword"] = $numericalPasswordResults.NumericalPassword
         
         $encryptionResults = $encVolumeInstance | Invoke-CimMethod -MethodName "Encrypt"
-        if (($null -eq $encryptionResults) -or ($encryptionResults.ReturnValue -ne 0)) {
+        if ($null -eq $encryptionResults) {
             throw
         }
         
