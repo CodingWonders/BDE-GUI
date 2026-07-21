@@ -15,11 +15,11 @@ $BDEGUIUnlockForm_Load = {
 	
 	if ($global:volumes.Count -lt 1) {
 		[System.Windows.Forms.MessageBox]::Show("No encryptable volumes have been detected. Connect an encryptable volume and click Refresh.", $BDEGUIEncryptForm.Text, "OK", "Info")
-		$Decrypt_Button.Enabled = $true
+		$Decrypt_Button.Enabled = $false
 	} else {
 		$VolumesComboBox.Items.AddRange(($global:volumes | Select-Object -ExpandProperty DriveLetter))
 		$VolumesComboBox.SelectedIndex = 0
-		$Decrypt_Button.Enabled = $false
+		$Decrypt_Button.Enabled = $true
 	}
 }
 
@@ -31,11 +31,11 @@ $Refresh_Button_Click = {
 	
 	if ($global:volumes.Count -lt 1) {
 		[System.Windows.Forms.MessageBox]::Show("No encryptable volumes have been detected. Connect an encryptable volume and click Refresh.", $BDEGUIEncryptForm.Text, "OK", "Info")
-		$Decrypt_Button.Enabled = $true
+		$Decrypt_Button.Enabled = $false
 	} else {
 		$VolumesComboBox.Items.AddRange(($global:volumes | Select-Object -ExpandProperty DriveLetter))
 		$VolumesComboBox.SelectedIndex = 0
-		$Decrypt_Button.Enabled = $false
+		$Decrypt_Button.Enabled = $true
 	}
 	
 	$BDEGUIEncryptForm.DialogResult = 'None'
